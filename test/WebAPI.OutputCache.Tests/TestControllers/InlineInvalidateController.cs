@@ -38,31 +38,28 @@ namespace WebAPI.OutputCache.Tests.TestControllers
 
         public void Post()
         {
-            var cache = Configuration.CacheOutputConfiguration().GetCacheOutputProvider(Request);
-            cache.RemoveStartsWith(Configuration.CacheOutputConfiguration().MakeBaseCachekey("InlineInvalidate", "Get_c100_s100"));
+            Configuration.CacheOutputConfiguration().ClearCache(typeof(InlineInvalidateController), "Get_c100_s100");
 
             //do nothing
         }
 
         public void Put()
-        {
-            var cache = Configuration.CacheOutputConfiguration().GetCacheOutputProvider(Request);
-            cache.RemoveStartsWith(Configuration.CacheOutputConfiguration().MakeBaseCachekey((InlineInvalidateController x) => x.Get_c100_s100()));
-
+        {            
+			Configuration.CacheOutputConfiguration().ClearCache((InlineInvalidateController x) => x.Get_c100_s100());
             //do nothing
         }
 
         public void Delete_non_standard_name()
         {
-            var cache = Configuration.CacheOutputConfiguration().GetCacheOutputProvider(Request);
-            cache.RemoveStartsWith(Configuration.CacheOutputConfiguration().MakeBaseCachekey((InlineInvalidateController x) => x.Get_c100_s100(7)));            
+			Configuration.CacheOutputConfiguration().ClearCache((InlineInvalidateController x) => x.Get_c100_s100(7));            
+
+			//do nothing
         }
 
         public void Delete_parameterized()
         {
-            var cache = Configuration.CacheOutputConfiguration().GetCacheOutputProvider(Request);
-            cache.RemoveStartsWith(Configuration.CacheOutputConfiguration().MakeBaseCachekey((InlineInvalidateController x) => x.Get_c100_s100_with_param(7)));
-
+			Configuration.CacheOutputConfiguration().ClearCache((InlineInvalidateController x) => x.Get_c100_s100_with_param(7));
+			            
             //do nothing
         }
     }

@@ -50,8 +50,7 @@ namespace WebAPI.OutputCache.Demo
             team.League = value.League;
             team.Name = value.Name;
 
-            var cache = Configuration.CacheOutputConfiguration().GetCacheOutputProvider(Request);
-            cache.RemoveStartsWith(Configuration.CacheOutputConfiguration().MakeBaseCachekey((TeamsController t) => t.GetById(0)));
+			Configuration.CacheOutputConfiguration().ClearCache((TeamsController t) => t.GetById(0));            
         }
 
         public void Delete(int id)

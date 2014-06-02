@@ -19,8 +19,18 @@ namespace WebAPI.OutputCache.Tests
         {
             public string MakeCacheKey(HttpActionContext context, MediaTypeHeaderValue mediaType, bool excludeQueryString = false)
             {
-                return "custom_key";
+				return string.Format("{0}-{1}", MakeBaseCacheKey(context), "custom_key");
             }
+
+	        public string MakeBaseCacheKey( HttpActionContext context )
+	        {
+		        return "custom_root";
+	        }
+
+	        public string MakeBaseCacheKey( Type controllerType, string action )
+	        {
+		        return "custom_root";
+	        }
         }
 
         private HttpServer _server;
@@ -62,6 +72,9 @@ namespace WebAPI.OutputCache.Tests
             _keyGeneratorA.Setup(k => k.MakeCacheKey(It.IsAny<HttpActionContext>(), It.IsAny<MediaTypeHeaderValue>(), It.IsAny<bool>()))
                 .Returns("keykeykey")
                 .Verifiable("Key generator was never called");
+			_keyGeneratorA.Setup(k => k.MakeBaseCacheKey(It.IsAny<HttpActionContext>()))
+				.Returns("sample-get_c100_s100")
+				.Verifiable("MakeBaseCacheKey was never called.");
             // use the samplecontroller to show that no changes are required to existing code
             var result = client.GetAsync(_url + "sample/Get_c100_s100").Result;
 
@@ -78,9 +91,9 @@ namespace WebAPI.OutputCache.Tests
             var client = new HttpClient(_server);
             var result = client.GetAsync(_url + "cachekey/get_custom_key").Result;
 
-            _cache.Verify(s => s.Contains(It.Is<string>(x => x == "custom_key")), Times.Exactly(2));
-            _cache.Verify(s => s.Add(It.Is<string>(x => x == "custom_key"), It.IsAny<byte[]>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "cachekey-get_custom_key")), Times.Once());
-            _cache.Verify(s => s.Add(It.Is<string>(x => x == "custom_key:response-ct"), It.IsAny<object>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "cachekey-get_custom_key")), Times.Once());
+            _cache.Verify(s => s.Contains(It.Is<string>(x => x == "custom_root-custom_key")), Times.Exactly(2));
+			_cache.Verify(s => s.Add(It.Is<string>(x => x == "custom_root-custom_key"), It.IsAny<byte[]>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "custom_root")), Times.Once());
+			_cache.Verify(s => s.Add(It.Is<string>(x => x == "custom_root-custom_key:response-ct"), It.IsAny<object>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "custom_root")), Times.Once());
         }
     }
 }

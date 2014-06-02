@@ -43,8 +43,7 @@ namespace WebAPI.OutputCache.Tests
             var client = new HttpClient(_server);
 
             var result = client.PostAsync(_url + "Post", new StringContent(string.Empty)).Result;
-
-            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100")), Times.Exactly(1));
+			_cache.Verify(s => s.Contains(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100")), Times.Exactly(1));            
         }
 
         [Test]
@@ -53,7 +52,8 @@ namespace WebAPI.OutputCache.Tests
             var client = new HttpClient(_server);
             var result = client.PutAsync(_url + "Put", new StringContent(string.Empty)).Result;
 
-            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100")), Times.Exactly(1));
+			_cache.Verify(s => s.Contains(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100")), Times.Exactly(1));
+//            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100")), Times.Exactly(1));
         }
 
         [Test]
@@ -62,7 +62,8 @@ namespace WebAPI.OutputCache.Tests
             var client = new HttpClient(_server);
             var result = client.DeleteAsync(_url + "Delete_parameterized").Result;
 
-            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100_with_param")), Times.Exactly(1));
+			_cache.Verify(s => s.Contains(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100_with_param")), Times.Exactly(1));
+//            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-get_c100_s100_with_param")), Times.Exactly(1));
         }
 
         [Test]
@@ -70,8 +71,7 @@ namespace WebAPI.OutputCache.Tests
         {
             var client = new HttpClient(_server);
             var result = client.DeleteAsync(_url + "Delete_non_standard_name").Result;
-
-            _cache.Verify(s => s.RemoveStartsWith(It.Is<string>(x => x == "inlineinvalidate-getbyid")), Times.Exactly(1));
+			_cache.Verify(s => s.Contains(It.Is<string>(x => x == "inlineinvalidate-getbyid")), Times.Exactly(1));            
         }
 
         [TearDown]

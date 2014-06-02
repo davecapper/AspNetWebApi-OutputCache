@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -14,7 +15,7 @@ namespace WebAPI.OutputCache
         {
             var controller = context.ControllerContext.ControllerDescriptor.ControllerName;
             var action = context.ActionDescriptor.ActionName;
-            var key = context.Request.GetConfiguration().CacheOutputConfiguration().MakeBaseCachekey(controller, action);
+            var key = context.Request.GetConfiguration().CacheOutputConfiguration().GetCacheKeyGenerator(context.Request, null).MakeBaseCacheKey(context);
             var actionParameters = context.ActionArguments.Where(x => x.Value != null).Select(x => x.Key + "=" + GetValue(x.Value));
 
             string parameters;
@@ -49,7 +50,37 @@ namespace WebAPI.OutputCache
             return cachekey;
         }
 
-        private string GetJsonpCallback(HttpRequestMessage request)
+	    public string MakeBaseCacheKey( HttpActionContext context )
+	    {
+			return string.Format("{0}-{1}", context.ControllerContext.ControllerDescriptor.ControllerName.Replace("Controller", string.Empty).ToLower(), context.ActionDescriptor.ActionName.ToLower());
+	    }
+
+	    public string MakeBaseCacheKey( Type controllerType, string action )
+	    {
+			return string.Format("{0}-{1}", controllerType.Name.Replace("Controller", string.Empty).ToLower(), action.ToLower());
+	    }
+
+
+//		public string MakeBaseCachekey<T, U>(Expression<Func<T, U>> expression)
+//		{
+//			var method = expression.Body as MethodCallExpression;
+//			if (method == null) throw new ArgumentException("Expression is wrong");
+//
+//			var methodName = method.Method.Name;
+//			var nameAttribs = method.Method.GetCustomAttributes(typeof(ActionNameAttribute), false);
+//			if (nameAttribs.Any())
+//			{
+//				var actionNameAttrib = (ActionNameAttribute)nameAttribs.FirstOrDefault();
+//				if (actionNameAttrib != null)
+//				{
+//					methodName = actionNameAttrib.Name;
+//				}
+//			}
+//
+//			return string.Format("{0}-{1}", typeof(T).Name.Replace("Controller", string.Empty).ToLower(), methodName.ToLower());
+//		}
+
+	    private string GetJsonpCallback(HttpRequestMessage request)
         {
             var callback = string.Empty;
             if (request.Method == HttpMethod.Get)

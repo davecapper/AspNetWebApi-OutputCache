@@ -84,12 +84,12 @@ namespace WebAPI.OutputCache.Tests
         [Test]
         public void selected_generator_with_internal_registration_is_used()
         {
-            _server.Configuration.CacheOutputConfiguration().RegisterCacheKeyGeneratorProvider(() => new InternalRegisteredCacheKeyGenerator("internal"));
+            _server.Configuration.CacheOutputConfiguration().RegisterCacheKeyGeneratorProvider(() => new InternalRegisteredCacheKeyGenerator("root", "internal"));
 
             var client = new HttpClient(_server);
             var result = client.GetAsync(_url + "cachekey/get_internalregistered").Result;
 
-            _cache.Verify(s => s.Add(It.Is<string>(x => x == "internal"), It.IsAny<byte[]>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "cachekey-get_internalregistered")), Times.Once());
+            _cache.Verify(s => s.Add(It.Is<string>(x => x == "root-internal"), It.IsAny<byte[]>(), It.Is<DateTimeOffset>(x => x <= DateTime.Now.AddSeconds(100)), It.Is<string>(x => x == "root")), Times.Once());
         }
 
         [Test]
@@ -109,21 +109,45 @@ namespace WebAPI.OutputCache.Tests
                 Assert.Fail("This cache key generator should never be invoked");
                 return "fail";
             }
+
+	        public string MakeBaseCacheKey( HttpActionContext context )
+	        {
+				Assert.Fail("This cache key generator should never be invoked");
+				return "fail";
+	        }
+
+	        public string MakeBaseCacheKey( Type controllerType, string action )
+	        {
+				Assert.Fail("This cache key generator should never be invoked");
+				return "fail";
+	        }
         }
 
         public class InternalRegisteredCacheKeyGenerator : ICacheKeyGenerator
         {
             private readonly string _key;
+	        private readonly string _root;
 
-            public InternalRegisteredCacheKeyGenerator(string key)
+            public InternalRegisteredCacheKeyGenerator(string root, string key)
             {
+	            _root = root;
                 _key = key;
             }
 
             public string MakeCacheKey(HttpActionContext context, MediaTypeHeaderValue mediaType, bool excludeQueryString = false)
             {
-                return _key;
+                return string.Format("{0}-{1}", MakeBaseCacheKey(context), _key);
             }
+
+	        public string MakeBaseCacheKey( HttpActionContext context )
+	        {
+		        return _root;
+	        }
+
+	        public string MakeBaseCacheKey( Type controllerType, string action )
+	        {
+		        return _root;
+	        }
         }
         #endregion
     }

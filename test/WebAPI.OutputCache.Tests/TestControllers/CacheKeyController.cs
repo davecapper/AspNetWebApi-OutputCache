@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -12,6 +13,16 @@ namespace WebAPI.OutputCache.Tests.TestControllers
             {
                 return "unregistered";
             }
+
+	        public string MakeBaseCacheKey( HttpActionContext context )
+	        {
+		        throw new NotImplementedException();
+	        }
+
+	        public string MakeBaseCacheKey( Type controllerType, string action )
+	        {
+		        throw new NotImplementedException();
+	        }
         }
 
         [CacheOutput(CacheKeyGenerator = typeof(CacheKeyGeneratorTests.CustomCacheKeyGenerator), ClientTimeSpan = 100, ServerTimeSpan = 100)]
